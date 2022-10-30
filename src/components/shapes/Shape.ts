@@ -1,4 +1,4 @@
-import { Position } from "../types";
+import { Position } from "../../types";
 
 export abstract class Shape {
   protected _x = 0;

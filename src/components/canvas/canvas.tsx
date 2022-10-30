@@ -1,5 +1,5 @@
 import React from "react";
-import { Circle } from "../../shapes";
+import { Circle } from "..";
 
 class Canvas extends React.Component {
   private readonly CANVAS_ID = "canvas";
