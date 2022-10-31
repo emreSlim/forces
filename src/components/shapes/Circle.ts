@@ -2,8 +2,8 @@ import { Position } from "../../types";
 import { Shape, Line } from ".";
 
 export class Circle extends Shape {
-  _x = 0;
-  _y = 0;
+  private _x = 0;
+  private _y = 0;
   private _radius: number;
   constructor(radius: number) {
     super();
@@ -23,6 +23,11 @@ export class Circle extends Shape {
     if (y) this._y = y;
   }
 
+  public movePosition({ x, y }: Partial<Position>) {
+    if (x) this._x += x;
+    if (y) this._y += y;
+  }
+
   get radius() {
     return this._radius;
   }
@@ -35,6 +40,15 @@ export class Circle extends Shape {
     ctx.fillStyle = this._fillColor;
     ctx.arc(this._x, this._y, this._radius, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  public intersectsPoint(x: number, y: number) {
+    return (
+      x > this._x - this._radius &&
+      x < this._x + this._radius &&
+      y > this._y - this._radius &&
+      y < this._y + this._radius
+    );
   }
 
   public intersactsCircle(circle: Circle) {
