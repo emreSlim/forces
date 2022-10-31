@@ -1,26 +1,12 @@
 import { Position } from "../../types";
 
 export abstract class Shape {
-  protected _x = 0;
-  protected _y = 0;
   protected _vx = 0;
   protected _vy = 0;
   protected _fillColor = "#000";
   protected _strokeColor = "#000";
   protected _strokeWidth = 1;
 
-  public get x(): number {
-    return this._x;
-  }
-
-  public get y(): number {
-    return this._y;
-  }
-
-  public setPosition({ x, y }: Partial<Position>) {
-    if (x) this._x = x;
-    if (y) this._y = y;
-  }
   public get vx(): number {
     return this._vx;
   }
