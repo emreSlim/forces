@@ -1,10 +1,12 @@
 import { Circle, Line, Shape } from "../index";
-
+import { Random } from "../../helpers";
 class Simulation {
   private canvas: HTMLCanvasElement;
 
   private shapes: Shape[] = [];
-  private ball?: Circle;
+  private balls: Circle[] = [];
+  private selectedBall: Circle;
+  // private ball?: Circle;
   private ground?: Line;
   private animationTimerID?: number;
 
@@ -13,19 +15,30 @@ class Simulation {
   }
 
   init = () => {
-    this.addBall();
+    this.addBalls();
     this.addGround();
     this.canvas.addEventListener("mousedown", this.onMouseDown);
     window.addEventListener("mouseup", this.onMouseUp);
     this.redraw();
+    this.startAnimation();
   };
 
-  addBall = () => {
-    const ball = new Circle(50);
-    ball.setFillColor("red");
-    ball.setPosition({ x: 100, y: 100 });
-    this.shapes.push(ball);
-    this.ball = ball;
+  addBalls = () => {
+    const radius = 2;
+    const ballcount = this.canvas.width / (radius * 2) - 1;
+    for (let i = 1; i < ballcount; i++) {
+      const ball = new Circle(radius);
+      ball.setFillColor(`hsl(${(360 / ballcount) * i}, 100%, 45%)`);
+      ball.setPosition({ x: radius * 2 * i + i, y: 100 });
+      this.shapes.push(ball);
+      this.balls.push(ball);
+
+      setTimeout(() => {
+        ball.setAcceleration({ y: 50 });
+        ball.setVelocity({ x: 0, y: 0 });
+        ball.startMoving();
+      }, 50 * i);
+    }
   };
 
   addGround = () => {
@@ -44,7 +57,7 @@ class Simulation {
     const ctx = this.canvas.getContext("2d");
     if (ctx) {
       ctx.save();
-      ctx.fillStyle = "#fff" + (tail ? "4" : "");
+      ctx.fillStyle = "#fff" + (tail ? "1" : "");
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.restore();
       for (let shape of this.shapes) {
@@ -54,32 +67,49 @@ class Simulation {
   };
 
   onMouseDown = (e: MouseEvent) => {
-    if (this.ball?.intersectsPoint(e.offsetX, e.offsetY)) {
-      window.addEventListener("mousemove", this.onMouseMove);
-      this.startAnimation();
+    for (let ball of this.balls) {
+      if (ball.intersectsPoint(e.offsetX, e.offsetY)) {
+        window.addEventListener("mousemove", this.onMouseMove);
+        ball.stopMoving();
+        this.startAnimation();
+        this.selectedBall = ball;
+        break;
+      }
     }
   };
 
   onMouseMove = (e: MouseEvent) => {
-    if (!this.ball.intersactsLine(this.ground)) {
-      this.ball.movePosition({ x: e.movementX, y: e.movementY });
-      if (this.ball.intersactsLine(this.ground))
-        this.ball.movePosition({ x: -e.movementX, y: -e.movementY });
+    if (!this.selectedBall.intersectsLine(this.ground)) {
+      this.selectedBall.movePosition({ x: e.movementX, y: e.movementY });
+      if (this.selectedBall.intersectsLine(this.ground))
+        this.selectedBall.movePosition({ x: -e.movementX, y: -e.movementY });
     } else {
     }
   };
   onMouseUp = () => {
     window.removeEventListener("mousemove", this.onMouseMove);
-    this.stopAnimation();
-    this.redraw(false);
+    if (!this.selectedBall.isMoving) {
+      this.selectedBall.setAcceleration({ y: 980 });
+      this.selectedBall.setVelocity({ x: 0, y: 0 });
+      this.selectedBall.startMoving();
+    }
   };
 
   startAnimation = () => {
-    const cb = () => {
-      this.redraw();
-      this.animationTimerID = window.requestAnimationFrame(cb);
-    };
-    cb();
+    if (!this.animationTimerID) {
+      const cb = () => {
+        this.redraw();
+        for (let ball of this.balls) {
+          const delta = ball.updatePosition();
+          if (ball.y + ball.radius > this.ground.y1) {
+            ball.movePosition({ y: -delta.y });
+            ball.setVelocity({ y: -ball.vy });
+          }
+        }
+        this.animationTimerID = window.requestAnimationFrame(cb);
+      };
+      cb();
+    }
   };
 
   stopAnimation = () => {
@@ -88,3 +118,5 @@ class Simulation {
 }
 
 export { Simulation };
+
+console.log(window.innerWidth / (window.screen.pixelDepth * 2.54));

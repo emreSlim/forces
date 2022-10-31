@@ -46,6 +46,8 @@ export class Line extends Shape {
     if (y2) this._y2 = y2;
   }
 
+  public override _updatePosition(): void {}
+
   protected _draw(ctx: CanvasRenderingContext2D): void {
     ctx.strokeStyle = this.strokeColor;
     ctx.lineWidth = 2;

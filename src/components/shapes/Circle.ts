@@ -32,8 +32,12 @@ export class Circle extends Shape {
     return this._radius;
   }
 
-  setRadius(radius: number) {
+  public setRadius(radius: number) {
     this._radius = radius;
+  }
+
+  protected override _updatePosition(dx: number, dy: number): void {
+    this.movePosition({ x: dx, y: dy });
   }
 
   protected override _draw(ctx: CanvasRenderingContext2D): void {
@@ -58,7 +62,7 @@ export class Circle extends Shape {
     );
   }
 
-  public intersactsLine(line: Line) {
+  public intersectsLine(line: Line) {
     function getSlope(x1: number, y1: number, x2: number, y2: number) {
       return (y2 - y1) / (x2 - x1);
     }
