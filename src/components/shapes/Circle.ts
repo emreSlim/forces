@@ -19,13 +19,13 @@ export class Circle extends Shape {
   }
 
   public setPosition({ x, y }: Partial<Position>) {
-    if (x) this._x = x;
-    if (y) this._y = y;
+    if (isFinite(x)) this._x = x;
+    if (isFinite(y)) this._y = y;
   }
 
   public movePosition({ x, y }: Partial<Position>) {
-    if (x) this._x += x;
-    if (y) this._y += y;
+    if (isFinite(x)) this._x += x;
+    if (isFinite(y)) this._y += y;
   }
 
   get radius() {

@@ -12,6 +12,8 @@ export abstract class Shape {
   protected _strokeWidth = 1;
   protected _timestamp: number = undefined;
   protected _isMoving = false;
+  readonly tickLength = 0.02;
+
   constructor() {}
 
   public get ax(): number {
@@ -23,8 +25,8 @@ export abstract class Shape {
   }
 
   public setAcceleration({ x, y }: Partial<Position>) {
-    if (x) this._ax = x;
-    if (y) this._ay = y;
+    if (isFinite(x)) this._ax = x;
+    if (isFinite(y)) this._ay = y;
   }
 
   public get vx(): number {
@@ -36,8 +38,8 @@ export abstract class Shape {
   }
 
   public setVelocity({ x, y }: Partial<Position>) {
-    if (x) this._vx = x;
-    if (y) this._vy = y;
+    if (isFinite(x)) this._vx = x;
+    if (isFinite(y)) this._vy = y;
   }
 
   public startMoving() {
@@ -59,17 +61,12 @@ export abstract class Shape {
 
   protected abstract _updatePosition(dx: number, dy: number): void;
 
-  public updatePosition() {
-    if (this._timestamp) {
-      const oldTime = this._timestamp;
-      this._timestamp = Date.now();
-      const passedTime = (this._timestamp - oldTime) / 1000;
-      this._vx += this._ax * passedTime;
+  public updatePosition(passedTime = this.tickLength, accelerate = true) {
+    if (accelerate) {
+      this._vx += this._ax * passedTime; // v = u + a*t
       this._vy += this._ay * passedTime;
-      const delta = { x: this._vx * passedTime, y: this._vy * passedTime };
-      this._updatePosition(delta.x, delta.y);
-      return delta;
     }
+    this._updatePosition(this._vx * passedTime, this._vy * passedTime);
   }
 
   public stopMoving() {

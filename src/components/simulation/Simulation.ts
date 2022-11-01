@@ -9,7 +9,7 @@ class Simulation {
   // private ball?: Circle;
   private ground?: Line;
   private animationTimerID?: number;
-
+  private gravity = 64; //pixel/time**2
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
   }
@@ -19,12 +19,13 @@ class Simulation {
     this.addGround();
     this.canvas.addEventListener("mousedown", this.onMouseDown);
     window.addEventListener("mouseup", this.onMouseUp);
+    window.addEventListener("dblclick", this.stopAnimation);
     this.redraw();
     this.startAnimation();
   };
 
   addBalls = () => {
-    const radius = 2;
+    const radius = 5;
     const ballcount = this.canvas.width / (radius * 2) - 1;
     for (let i = 1; i < ballcount; i++) {
       const ball = new Circle(radius);
@@ -34,7 +35,7 @@ class Simulation {
       this.balls.push(ball);
 
       setTimeout(() => {
-        ball.setAcceleration({ y: 50 });
+        ball.setAcceleration({ y: this.gravity });
         ball.setVelocity({ x: 0, y: 0 });
         ball.startMoving();
       }, 50 * i);
@@ -89,7 +90,7 @@ class Simulation {
   onMouseUp = () => {
     window.removeEventListener("mousemove", this.onMouseMove);
     if (!this.selectedBall.isMoving) {
-      this.selectedBall.setAcceleration({ y: 980 });
+      this.selectedBall.setAcceleration({ y: this.gravity });
       this.selectedBall.setVelocity({ x: 0, y: 0 });
       this.selectedBall.startMoving();
     }
@@ -98,14 +99,20 @@ class Simulation {
   startAnimation = () => {
     if (!this.animationTimerID) {
       const cb = () => {
-        this.redraw();
         for (let ball of this.balls) {
-          const delta = ball.updatePosition();
+          ball.updatePosition();
           if (ball.y + ball.radius > this.ground.y1) {
-            ball.movePosition({ y: -delta.y });
+            const prevY = ball.y;
+            ball.updatePosition(-ball.tickLength, false); //move one frame back as ball has crossed the ground
+            const time =
+              ((this.ground.y1 - (ball.y + ball.radius)) / (prevY - ball.y)) *
+              ball.tickLength; // time which is needed to touch ground
+
+            ball.updatePosition(time);
             ball.setVelocity({ y: -ball.vy });
           }
         }
+        this.redraw();
         this.animationTimerID = window.requestAnimationFrame(cb);
       };
       cb();
