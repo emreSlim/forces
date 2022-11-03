@@ -29,8 +29,14 @@ export class Random {
     return Math.random() > 0.5;
   }
 
-  static color() {
-    return `rgb(${Random.int(255)},${Random.int(255)},${Random.int(255)})`;
+  static color(min = 0, max = 255) {
+    max = NumberE.withLimits(max, 0, 255);
+    min = NumberE.withLimits(min, 0, 255);
+
+    return `rgb(${Random.int(max, min)},${Random.int(max, min)},${Random.int(
+      max,
+      min
+    )})`;
   }
 }
 /**

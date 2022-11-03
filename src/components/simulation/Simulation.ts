@@ -24,16 +24,16 @@ class Simulation {
   };
 
   addBalls = () => {
-    const radius = 5;
-    const ballcount = 100;
-    const maxSpeed = 128;
+    const radius = 2;
+    const ballcount = 500;
+    const maxSpeed = 64;
 
     for (let i = 0; i < ballcount; i++) {
       const ball = new Circle(radius);
       this.balls.push(ball);
       this.shapes.push(ball);
 
-      ball.setFillColor(Random.color());
+      ball.setFillColor(Random.color(50));
       ball.setPosition(
         Random.int(this.canvas.width - radius, radius),
         Random.int(this.canvas.height - radius, radius)
@@ -52,11 +52,11 @@ class Simulation {
     // this.balls[0].startMoving();
   };
 
-  redraw = (tail = false) => {
+  redraw = (tail = true) => {
     const ctx = this.canvas.getContext("2d");
     if (ctx) {
       ctx.save();
-      ctx.fillStyle = "#fff" + (tail ? "1" : "");
+      ctx.fillStyle = "#111" + (tail ? "1" : "");
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.restore();
       for (let shape of this.shapes) {
@@ -203,7 +203,6 @@ var getReflection = function (
   var m2 = vy / vx;
 
   var a = Math.atan(m1);
-  var aDeg = NumberE.radToDeg(a);
 
   var b = Math.atan(m2);
 
@@ -219,10 +218,7 @@ var getReflection = function (
     //fourth quadrant
   }
 
-  var bDeg = NumberE.radToDeg(b);
-
   var c = 2 * a - b;
-  var deg = NumberE.radToDeg(c);
 
   var y = Math.sin(c) * v;
   var x = Math.cos(c) * v;
