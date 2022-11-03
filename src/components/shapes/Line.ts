@@ -29,17 +29,7 @@ export class Line extends Shape {
     return this._y2;
   }
 
-  public setPosition({
-    x1,
-    y1,
-    x2,
-    y2,
-  }: {
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-  }) {
+  public setPosition(x1?: number, y1?: number, x2?: number, y2?: number) {
     if (x1) this._x1 = x1;
     if (y1) this._y1 = y1;
     if (x2) this._x2 = x2;

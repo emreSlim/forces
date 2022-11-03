@@ -24,7 +24,7 @@ export abstract class Shape {
     return this._ay;
   }
 
-  public setAcceleration({ x, y }: Partial<Position>) {
+  public setAcceleration(x?: number, y?: number) {
     if (isFinite(x)) this._ax = x;
     if (isFinite(y)) this._ay = y;
   }
@@ -37,7 +37,7 @@ export abstract class Shape {
     return this._vy;
   }
 
-  public setVelocity({ x, y }: Partial<Position>) {
+  public setVelocity(x?: number, y?: number) {
     if (isFinite(x)) this._vx = x;
     if (isFinite(y)) this._vy = y;
   }
@@ -62,6 +62,8 @@ export abstract class Shape {
   protected abstract _updatePosition(dx: number, dy: number): void;
 
   public updatePosition(passedTime = this.tickLength, accelerate = true) {
+    if (!this._isMoving) return;
+
     if (accelerate) {
       this._vx += this._ax * passedTime; // v = u + a*t
       this._vy += this._ay * passedTime;

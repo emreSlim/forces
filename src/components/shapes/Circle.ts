@@ -18,12 +18,12 @@ export class Circle extends Shape {
     return this._y;
   }
 
-  public setPosition({ x, y }: Partial<Position>) {
+  public setPosition(x?: number, y?: number) {
     if (isFinite(x)) this._x = x;
     if (isFinite(y)) this._y = y;
   }
 
-  public movePosition({ x, y }: Partial<Position>) {
+  public movePosition(x?: number, y?: number) {
     if (isFinite(x)) this._x += x;
     if (isFinite(y)) this._y += y;
   }
@@ -37,7 +37,7 @@ export class Circle extends Shape {
   }
 
   protected override _updatePosition(dx: number, dy: number): void {
-    this.movePosition({ x: dx, y: dy });
+    this.movePosition(dx, dy);
   }
 
   protected override _draw(ctx: CanvasRenderingContext2D): void {
@@ -57,7 +57,7 @@ export class Circle extends Shape {
 
   public intersactsCircle(circle: Circle) {
     return (
-      (this._radius + circle._radius) ** 2 <
+      (this._radius + circle._radius) ** 2 >
       (this._x - circle._x) ** 2 + (this._y - circle._y) ** 2
     );
   }

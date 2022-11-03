@@ -28,6 +28,10 @@ export class Random {
   static boolean() {
     return Math.random() > 0.5;
   }
+
+  static color() {
+    return `rgb(${Random.int(255)},${Random.int(255)},${Random.int(255)})`;
+  }
 }
 /**
  * Object extended functionalities
@@ -72,4 +76,6 @@ export class NumberE {
     _val = Math.ceil(_val);
     return _val / pre;
   }
+
+  static radToDeg = (x: number) => (x * 180) / Math.PI;
 }

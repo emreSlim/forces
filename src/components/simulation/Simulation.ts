@@ -1,5 +1,5 @@
 import { Circle, Line, Shape } from "../index";
-import { Random } from "../../helpers";
+import { NumberE, Random } from "../../helpers";
 class Simulation {
   private canvas: HTMLCanvasElement;
 
@@ -7,7 +7,6 @@ class Simulation {
   private balls: Circle[] = [];
   private selectedBall: Circle;
   // private ball?: Circle;
-  private ground?: Line;
   private animationTimerID?: number;
   private gravity = 64; //pixel/time**2
   constructor(canvas: HTMLCanvasElement) {
@@ -16,9 +15,9 @@ class Simulation {
 
   init = () => {
     this.addBalls();
-    this.addGround();
     this.canvas.addEventListener("mousedown", this.onMouseDown);
     window.addEventListener("mouseup", this.onMouseUp);
+    window.addEventListener("click", this.onClick);
     window.addEventListener("dblclick", this.stopAnimation);
     this.redraw();
     this.startAnimation();
@@ -26,35 +25,34 @@ class Simulation {
 
   addBalls = () => {
     const radius = 5;
-    const ballcount = this.canvas.width / (radius * 2) - 1;
-    for (let i = 1; i < ballcount; i++) {
+    const ballcount = 100;
+    const maxSpeed = 128;
+
+    for (let i = 0; i < ballcount; i++) {
       const ball = new Circle(radius);
-      ball.setFillColor(`hsl(${(360 / ballcount) * i}, 100%, 45%)`);
-      ball.setPosition({ x: radius * 2 * i + i, y: 100 });
-      this.shapes.push(ball);
       this.balls.push(ball);
+      this.shapes.push(ball);
 
-      setTimeout(() => {
-        ball.setAcceleration({ y: this.gravity });
-        ball.setVelocity({ x: 0, y: 0 });
-        ball.startMoving();
-      }, 50 * i);
+      ball.setFillColor(Random.color());
+      ball.setPosition(
+        Random.int(this.canvas.width - radius, radius),
+        Random.int(this.canvas.height - radius, radius)
+      );
+      // //movement
+      ball.setVelocity(
+        Random.int(maxSpeed, -maxSpeed),
+        Random.int(maxSpeed, -maxSpeed)
+      );
+      ball.startMoving();
     }
+    // this.balls[0].setPosition(200, 200);
+    // this.balls[0].setVelocity(-10, -10);
+    // this.balls[1].setPosition(100, 100);
+    // this.balls[1].setVelocity(0, 0);
+    // this.balls[0].startMoving();
   };
 
-  addGround = () => {
-    const ground = new Line(
-      0,
-      this.canvas.height - 10,
-      this.canvas.width,
-      this.canvas.height - 10
-    );
-    ground.setStrokeColor("brown");
-    this.shapes.push(ground);
-    this.ground = ground;
-  };
-
-  redraw = (tail = true) => {
+  redraw = (tail = false) => {
     const ctx = this.canvas.getContext("2d");
     if (ctx) {
       ctx.save();
@@ -67,51 +65,102 @@ class Simulation {
     }
   };
 
+  onClick = (e: MouseEvent) => {
+    if (!this.isAnimationRunning()) this.startAnimation();
+  };
+
   onMouseDown = (e: MouseEvent) => {
     for (let ball of this.balls) {
       if (ball.intersectsPoint(e.offsetX, e.offsetY)) {
-        window.addEventListener("mousemove", this.onMouseMove);
-        ball.stopMoving();
-        this.startAnimation();
+        this.canvas.addEventListener("mousemove", this.onMouseMove);
         this.selectedBall = ball;
+        ball?.stopMoving();
         break;
       }
     }
   };
 
   onMouseMove = (e: MouseEvent) => {
-    if (!this.selectedBall.intersectsLine(this.ground)) {
-      this.selectedBall.movePosition({ x: e.movementX, y: e.movementY });
-      if (this.selectedBall.intersectsLine(this.ground))
-        this.selectedBall.movePosition({ x: -e.movementX, y: -e.movementY });
-    } else {
+    if (this.selectedBall) {
+      this.selectedBall.setPosition(
+        NumberE.withLimits(
+          e.offsetX,
+          this.selectedBall.radius,
+          this.canvas.width - this.selectedBall.radius
+        ),
+        NumberE.withLimits(
+          e.offsetY,
+          this.selectedBall.radius,
+          this.canvas.height - this.selectedBall.radius
+        )
+      );
     }
   };
   onMouseUp = () => {
-    window.removeEventListener("mousemove", this.onMouseMove);
-    if (!this.selectedBall.isMoving) {
-      this.selectedBall.setAcceleration({ y: this.gravity });
-      this.selectedBall.setVelocity({ x: 0, y: 0 });
-      this.selectedBall.startMoving();
+    this.canvas.removeEventListener("mousemove", this.onMouseMove);
+    this.selectedBall?.startMoving();
+    this.selectedBall = undefined;
+  };
+
+  onTick = () => {
+    outer: for (let ball of this.balls) {
+      ball.updatePosition();
+      if (ball.x > this.canvas.width - ball.radius || ball.x < ball.radius) {
+        ball.setPosition(
+          NumberE.withLimits(
+            ball.x,
+            ball.radius,
+            this.canvas.width - ball.radius
+          )
+        );
+        ball.setVelocity(-ball.vx);
+      }
+      if (ball.y > this.canvas.height - ball.radius || ball.y < ball.radius) {
+        ball.setPosition(
+          undefined,
+          NumberE.withLimits(
+            ball.y,
+            ball.radius,
+            this.canvas.height - ball.radius
+          )
+        );
+        ball.setVelocity(undefined, -ball.vy);
+      }
+
+      for (let otherBall of this.balls) {
+        if (ball == otherBall) continue;
+        if (ball.intersactsCircle(otherBall)) {
+          ball.setVelocity(
+            ...getReflection(
+              ball.x,
+              ball.y,
+              otherBall.x,
+              otherBall.y,
+              ball.vx,
+              ball.vy
+            )
+          );
+
+          otherBall.setVelocity(
+            ...getReflection(
+              otherBall.x,
+              otherBall.y,
+              ball.x,
+              ball.y,
+              otherBall.vx,
+              otherBall.vy
+            )
+          );
+          ball.updatePosition();
+        }
+      }
     }
   };
 
   startAnimation = () => {
     if (!this.animationTimerID) {
       const cb = () => {
-        for (let ball of this.balls) {
-          ball.updatePosition();
-          if (ball.y + ball.radius > this.ground.y1) {
-            const prevY = ball.y;
-            ball.updatePosition(-ball.tickLength, false); //move one frame back as ball has crossed the ground
-            const time =
-              ((this.ground.y1 - (ball.y + ball.radius)) / (prevY - ball.y)) *
-              ball.tickLength; // time which is needed to touch ground
-
-            ball.updatePosition(time);
-            ball.setVelocity({ y: -ball.vy });
-          }
-        }
+        this.onTick();
         this.redraw();
         this.animationTimerID = window.requestAnimationFrame(cb);
       };
@@ -119,11 +168,72 @@ class Simulation {
     }
   };
 
+  isAnimationRunning = () => !!this.animationTimerID;
+
   stopAnimation = () => {
     window.cancelAnimationFrame(this.animationTimerID);
+    this.animationTimerID = undefined;
   };
 }
 
 export { Simulation };
 
-console.log(window.innerWidth / (window.screen.pixelDepth * 2.54));
+const getSlope = (x1: number, y1: number, x2: number, y2: number) =>
+  (y1 - y2) / (x1 - x2);
+
+const getAngle = (m1: number, m2: number) =>
+  Math.atan((m1 + m2) / (1 - m1 * m2));
+
+var getReflection = function (
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  vx: number,
+  vy: number
+) {
+  if (x1 == x2) {
+    return [vx, -vy];
+  } else if (y1 == y2) {
+    return [-vx, vy];
+  }
+
+  var v = Math.hypot(vx, vy);
+  var m1 = getSlope(x1, y1, x2, y2);
+  var m2 = vy / vx;
+
+  var a = Math.atan(m1);
+  var aDeg = NumberE.radToDeg(a);
+
+  var b = Math.atan(m2);
+
+  if (vx < 0 && vy < 0) {
+    // first quadrant
+  } else if (vx > 0 && vy < 0) {
+    //second quadrant
+    b += Math.PI;
+  } else if (vx > 0 && vy > 0) {
+    //third quadrant
+    b += Math.PI;
+  } else if (vx < 0 && vy > 0) {
+    //fourth quadrant
+  }
+
+  var bDeg = NumberE.radToDeg(b);
+
+  var c = 2 * a - b;
+  var deg = NumberE.radToDeg(c);
+
+  var y = Math.sin(c) * v;
+  var x = Math.cos(c) * v;
+  // const a = (m1 - m2) / (1 + m1 * m2);
+  // const y = v * (a / Math.sqrt(1 + a ** 2));
+  // const x = v / Math.sqrt(a ** 2 - 1);
+
+  // if (vy < 0) {
+  //   x *= -1;
+  //   y *= -1;
+  // }
+
+  return [x, y];
+};
