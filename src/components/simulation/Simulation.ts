@@ -24,11 +24,11 @@ class Simulation {
   };
 
   addBalls = () => {
-    const radius = 2;
     const ballcount = 500;
     const maxSpeed = 64;
 
     for (let i = 0; i < ballcount; i++) {
+      const radius = Random.int(20);
       const ball = new Circle(radius);
       this.balls.push(ball);
       this.shapes.push(ball);
