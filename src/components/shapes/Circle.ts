@@ -80,27 +80,55 @@ export class Circle extends Shape {
     const centerX = (this._x + circle.x) / 2;
     const centerY = (this._y + circle.y) / 2;
 
-    if (Circle.isCircleApproaching(this, centerX, centerY)) {
-      Circle.reflectAgainstSurface(this, a);
-      this.updatePosition();
-    }
-    if (Circle.isCircleApproaching(circle, centerX, centerY)) {
-      Circle.reflectAgainstSurface(circle, a);
-    }
+    Circle.reflectAgainstSurface(
+      this,
+      a,
+      Circle.isCircleApproaching(this, centerX, centerY)
+    );
+    this.updatePosition();
+    Circle.reflectAgainstSurface(
+      circle,
+      a,
+      Circle.isCircleApproaching(circle, centerX, centerY)
+    );
   };
 
-  public static isCircleApproaching(c: Circle, x: number, y: number) {
+  /**
+   *
+   * @param c given circle object
+   * @param x x coordinate of approaching point
+   * @param y y coordinate of approaching point
+   * @returns
+   */
+  public static readonly isCircleApproaching = function (
+    c: Circle,
+    x: number,
+    y: number
+  ) {
     const distanceA = Math.hypot(c.x - (x + c.vx), c.y - (y + c.vy)); //distance 1 tick before
     const distanceB = Math.hypot(c.x + c.vx - x, c.y + c.vy - y); // distance 1 tick after
     return distanceB < distanceA;
-  }
-
-  public static reflectAgainstSurface(circle: Circle, a: number) {
+  };
+  /**
+   *
+   * @param circle given circle object
+   * @param a angle of line perpendicular to surface
+   * @param isApproaching
+   */
+  public static readonly reflectAgainstSurface = function (
+    circle: Circle,
+    a: number,
+    isApproaching: boolean
+  ) {
     const b = Geometry.getAngle(circle.vx, circle.vy); //approaching angle
     const c = 2 * a - b; //leaving angle
     const v = Math.hypot(circle.vx, circle.vy);
     const vy = Math.sin(c) * v;
     const vx = Math.cos(c) * v;
-    circle.setVelocity(vx, vy);
-  }
+    if (isApproaching) {
+      circle.setVelocity(vx, vy);
+    } else {
+      circle.setVelocity(-vx, -vy);
+    }
+  };
 }
