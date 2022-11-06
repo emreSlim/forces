@@ -1,5 +1,5 @@
 export const CANVAS = Object.freeze({
   ID: "main-canvas",
-  WIDTH: window.innerWidth - 50 + "px",
+  WIDTH: document.body.clientWidth + "px",
   HEIGHT: window.innerHeight - 100 + "px",
 });

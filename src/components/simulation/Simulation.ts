@@ -1,5 +1,5 @@
 import { Circle, Line, Shape } from "../index";
-import { NumberE, Random } from "../../helpers";
+import { Geometry, NumberE, Random } from "../../helpers";
 class Simulation {
   private canvas: HTMLCanvasElement;
 
@@ -45,11 +45,26 @@ class Simulation {
       );
       ball.startMoving();
     }
-    // this.balls[0].setPosition(200, 200);
-    // this.balls[0].setVelocity(-10, -10);
-    // this.balls[1].setPosition(100, 100);
-    // this.balls[1].setVelocity(0, 0);
+    // this.balls[0].setPosition(100, 100);
+    // this.balls[0].setVelocity(50, 50);
     // this.balls[0].startMoving();
+    // this.balls[1].setPosition(200, 200);
+    // this.balls[1].setVelocity(-10, -10);
+    // this.balls[1].startMoving();
+
+    // this.balls[2].setPosition(300, 400);
+    // this.balls[2].setVelocity(20, -20);
+    // this.balls[2].startMoving();
+    // this.balls[3].setPosition(400, 300);
+    // this.balls[3].setVelocity(-10, 10);
+    // this.balls[3].startMoving();
+
+    // this.balls[4].setPosition(400, 100);
+    // this.balls[4].setVelocity(20, 20);
+    // this.balls[4].startMoving();
+    // this.balls[5].setPosition(500, 200);
+    // this.balls[5].setVelocity(2, 2);
+    // this.balls[5].startMoving();
   };
 
   redraw = (tail = true) => {
@@ -130,28 +145,7 @@ class Simulation {
       for (let otherBall of this.balls) {
         if (ball == otherBall) continue;
         if (ball.intersactsCircle(otherBall)) {
-          ball.setVelocity(
-            ...getReflection(
-              ball.x,
-              ball.y,
-              otherBall.x,
-              otherBall.y,
-              ball.vx,
-              ball.vy
-            )
-          );
-
-          otherBall.setVelocity(
-            ...getReflection(
-              otherBall.x,
-              otherBall.y,
-              ball.x,
-              ball.y,
-              otherBall.vx,
-              otherBall.vy
-            )
-          );
-          ball.updatePosition();
+          ball.collideWith(otherBall);
         }
       }
     }
@@ -177,59 +171,3 @@ class Simulation {
 }
 
 export { Simulation };
-
-const getSlope = (x1: number, y1: number, x2: number, y2: number) =>
-  (y1 - y2) / (x1 - x2);
-
-const getAngle = (m1: number, m2: number) =>
-  Math.atan((m1 + m2) / (1 - m1 * m2));
-
-var getReflection = function (
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  vx: number,
-  vy: number
-) {
-  if (x1 == x2) {
-    return [vx, -vy];
-  } else if (y1 == y2) {
-    return [-vx, vy];
-  }
-
-  var v = Math.hypot(vx, vy);
-  var m1 = getSlope(x1, y1, x2, y2);
-  var m2 = vy / vx;
-
-  var a = Math.atan(m1);
-
-  var b = Math.atan(m2);
-
-  if (vx < 0 && vy < 0) {
-    // first quadrant
-  } else if (vx > 0 && vy < 0) {
-    //second quadrant
-    b += Math.PI;
-  } else if (vx > 0 && vy > 0) {
-    //third quadrant
-    b += Math.PI;
-  } else if (vx < 0 && vy > 0) {
-    //fourth quadrant
-  }
-
-  var c = 2 * a - b;
-
-  var y = Math.sin(c) * v;
-  var x = Math.cos(c) * v;
-  // const a = (m1 - m2) / (1 + m1 * m2);
-  // const y = v * (a / Math.sqrt(1 + a ** 2));
-  // const x = v / Math.sqrt(a ** 2 - 1);
-
-  // if (vy < 0) {
-  //   x *= -1;
-  //   y *= -1;
-  // }
-
-  return [x, y];
-};
