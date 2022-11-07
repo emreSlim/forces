@@ -47,6 +47,10 @@ export class Circle extends Shape {
     ctx.fill();
   }
 
+  get mass() {
+    return Math.PI * this._radius ** 2;
+  }
+
   public intersectsPoint(x: number, y: number) {
     return (
       x > this._x - this._radius &&
@@ -63,6 +67,34 @@ export class Circle extends Shape {
     );
   }
 
+  get momentum() {
+    return Math.hypot(this.vx, this.vy) * this.mass;
+  }
+
+  get momentumX() {
+    return this.vx * this.mass;
+  }
+
+  get momentumY() {
+    return this.vy * this.mass;
+  }
+
+  get kineticEnergyX() {
+    return (this.mass * this.vx ** 2) / 2;
+  }
+
+  get kineticEnergyY() {
+    return (this.mass * this.vy ** 2) / 2;
+  }
+
+  get kineticEnergy() {
+    return (this.mass * Math.hypot(this.vx, this.vy) ** 2) / 2;
+  }
+
+  get velocity() {
+    return Math.hypot(this._vx, this._vy);
+  }
+
   public intersectsLine(line: Line) {
     function getSlope(x1: number, y1: number, x2: number, y2: number) {
       return (y2 - y1) / (x2 - x1);
@@ -74,23 +106,57 @@ export class Circle extends Shape {
     return d < (this._radius / Math.sin(theta)) ** 2;
   }
 
-  public readonly collideWith = function (circle: Circle) {
-    const m1 = Geometry.getSlope(this._x, this._y, circle.x, circle.y);
+  public readonly collideWith = function (c2: Circle) {
+    let c1: Circle = this;
+
+    const m1 = Geometry.getSlope(c1._x, c1._y, c2.x, c2.y);
     const a = Math.atan(m1);
-    const centerX = (this._x + circle.x) / 2;
-    const centerY = (this._y + circle.y) / 2;
+    const centerX = (c1._x + c2.x) / 2;
+    const centerY = (c1._y + c2.y) / 2;
+
+    const [c1vx, c2vx] = Circle.getCollisionVelocities(
+      c1.mass,
+      c2.mass,
+      c1.vx,
+      c2.vx
+    );
+
+    const [c1vy, c2vy] = Circle.getCollisionVelocities(
+      c1.mass,
+      c2.mass,
+      c1.vy,
+      c2.vy
+    );
 
     Circle.reflectAgainstSurface(
-      this,
+      c1,
+      c1vx,
+      c1vy,
       a,
-      Circle.isCircleApproaching(this, centerX, centerY)
+      Circle.isCircleApproaching(c1, centerX, centerY)
     );
-    this.updatePosition();
+    c1.updatePosition();
     Circle.reflectAgainstSurface(
-      circle,
+      c2,
+      c2vx,
+      c2vy,
       a,
-      Circle.isCircleApproaching(circle, centerX, centerY)
+      Circle.isCircleApproaching(c2, centerX, centerY)
     );
+    c2.updatePosition();
+  };
+  /**
+   *
+   */
+  static getCollisionVelocities = (
+    m1: number,
+    m2: number,
+    u1: number,
+    u2: number
+  ) => {
+    let v1 = ((m1 - m2) * u1 + 2 * m2 * u2) / (m1 + m2);
+    let v2 = (2 * m1 * u1 + (m2 - m1) * u2) / (m1 + m2);
+    return [v1, v2];
   };
 
   /**
@@ -105,8 +171,8 @@ export class Circle extends Shape {
     x: number,
     y: number
   ) {
-    const distanceA = Math.hypot(c.x - (x + c.vx), c.y - (y + c.vy)); //distance 1 tick before
-    const distanceB = Math.hypot(c.x + c.vx - x, c.y + c.vy - y); // distance 1 tick after
+    const distanceA = Math.hypot(c._x - (x + c._vx), c._y - (y + c._vy)); //distance 1 tick before
+    const distanceB = Math.hypot(c._x + c._vx - x, c._y + c._vy - y); // distance 1 tick after
     return distanceB < distanceA;
   };
   /**
@@ -117,18 +183,21 @@ export class Circle extends Shape {
    */
   public static readonly reflectAgainstSurface = function (
     circle: Circle,
+    vx: number,
+    vy: number,
     a: number,
     isApproaching: boolean
   ) {
     const b = Geometry.getAngle(circle.vx, circle.vy); //approaching angle
+
     const c = 2 * a - b; //leaving angle
-    const v = Math.hypot(circle.vx, circle.vy);
-    const vy = Math.sin(c) * v;
-    const vx = Math.cos(c) * v;
+    const v = Math.hypot(vx, vy);
+    const new_vy = Math.sin(c) * v;
+    const new_vx = Math.cos(c) * v;
     if (isApproaching) {
-      circle.setVelocity(vx, vy);
+      circle.setVelocity(new_vx, new_vy);
     } else {
-      circle.setVelocity(-vx, -vy);
+      circle.setVelocity(vx, vy);
     }
   };
 }
