@@ -1,5 +1,5 @@
-import { Circle, Line, Shape } from "../index";
-import { Geometry, NumberE, Random } from "../../helpers";
+import { Circle, Line, Shape } from '../index';
+import { Geometry, NumberE, Random } from '../../helpers';
 class Simulation {
   private canvas: HTMLCanvasElement;
 
@@ -15,10 +15,10 @@ class Simulation {
 
   init = () => {
     this.addBalls();
-    this.canvas.addEventListener("mousedown", this.onMouseDown);
-    window.addEventListener("mouseup", this.onMouseUp);
-    window.addEventListener("click", this.onClick);
-    window.addEventListener("dblclick", this.stopAnimation);
+    this.canvas.addEventListener('mousedown', this.onMouseDown);
+    window.addEventListener('mouseup', this.onMouseUp);
+    window.addEventListener('click', this.onClick);
+    window.addEventListener('dblclick', this.stopAnimation);
     this.redraw();
     this.startAnimation();
   };
@@ -69,10 +69,10 @@ class Simulation {
   };
 
   redraw = (tail = true) => {
-    const ctx = this.canvas.getContext("2d");
+    const ctx = this.canvas.getContext('2d');
     if (ctx) {
       ctx.save();
-      ctx.fillStyle = "#111" + (tail ? "1" : "");
+      ctx.fillStyle = '#111' + (tail ? '1' : '');
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.restore();
       for (let shape of this.shapes) {
@@ -88,7 +88,7 @@ class Simulation {
   onMouseDown = (e: MouseEvent) => {
     for (let ball of this.balls) {
       if (ball.intersectsPoint(e.offsetX, e.offsetY)) {
-        this.canvas.addEventListener("mousemove", this.onMouseMove);
+        this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.selectedBall = ball;
         ball?.stopMoving();
         break;
@@ -113,7 +113,7 @@ class Simulation {
     }
   };
   onMouseUp = () => {
-    this.canvas.removeEventListener("mousemove", this.onMouseMove);
+    this.canvas.removeEventListener('mousemove', this.onMouseMove);
     this.selectedBall?.startMoving();
     this.selectedBall = undefined;
   };
@@ -145,7 +145,7 @@ class Simulation {
 
       for (let otherBall of this.balls) {
         if (ball == otherBall) continue;
-        if (ball.intersactsCircle(otherBall)) {
+        if (ball.intersectsCircle(otherBall)) {
           ball.collideWith(otherBall);
         }
       }

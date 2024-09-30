@@ -1,6 +1,5 @@
-import { Position } from "../../types";
-import { Shape, Line } from ".";
-import { Geometry } from "../../helpers/Geometry";
+import { Shape, Line } from '.';
+import { Geometry } from '../../helpers/Geometry';
 
 export class Circle extends Shape {
   private _x = 0;
@@ -60,7 +59,7 @@ export class Circle extends Shape {
     );
   }
 
-  public intersactsCircle(circle: Circle) {
+  public intersectsCircle(circle: Circle) {
     return (
       (this._radius + circle._radius) ** 2 >
       (this._x - circle._x) ** 2 + (this._y - circle._y) ** 2
@@ -68,30 +67,37 @@ export class Circle extends Shape {
   }
 
   get momentum() {
-    return Math.hypot(this.vx, this.vy) * this.mass;
+    // mass * velocity
+    return this.velocity * this.mass;
   }
 
   get momentumX() {
+    // mass * velocityX
     return this.vx * this.mass;
   }
 
   get momentumY() {
+    // mass * velocityY
     return this.vy * this.mass;
   }
 
   get kineticEnergyX() {
+    // 1/2 * mass * velocityX^2
     return (this.mass * this.vx ** 2) / 2;
   }
 
   get kineticEnergyY() {
+    // 1/2 * mass * velocityY^2
     return (this.mass * this.vy ** 2) / 2;
   }
 
   get kineticEnergy() {
-    return (this.mass * Math.hypot(this.vx, this.vy) ** 2) / 2;
+    // 1/2 * mass * velocity^2
+    return (this.mass * this.velocity ** 2) / 2;
   }
 
   get velocity() {
+    // hypotenuse of velocity vector
     return Math.hypot(this._vx, this._vy);
   }
 
@@ -154,7 +160,7 @@ export class Circle extends Shape {
     u1: number,
     u2: number
   ) => {
-    let v1 = ((m1 - m2) * u1 + 2 * m2 * u2) / (m1 + m2);
+    let v1 = (2 * m2 * u2 + (m1 - m2) * u1) / (m1 + m2);
     let v2 = (2 * m1 * u1 + (m2 - m1) * u2) / (m1 + m2);
     return [v1, v2];
   };
@@ -171,9 +177,15 @@ export class Circle extends Shape {
     x: number,
     y: number
   ) {
-    const distanceA = Math.hypot(c._x - (x + c._vx), c._y - (y + c._vy)); //distance 1 tick before
-    const distanceB = Math.hypot(c._x + c._vx - x, c._y + c._vy - y); // distance 1 tick after
-    return distanceB < distanceA;
+    if (
+      (c.x > x && c.vx > 0) ||
+      (c.x < x && c.vx < 0) ||
+      (c.y > y && c.vy > 0) ||
+      (c.y < y && c.vy < 0)
+    ) {
+      return false;
+    }
+    return true;
   };
   /**
    *
