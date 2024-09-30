@@ -1,8 +1,8 @@
 {
-  "name": "colliding-balls",
-  "version": "1.0.0",
-  "private": true,
+  "name": "colliding-balls-simulation",
+  "version": "1.0.1",
   "main": "build/index.js",
+  "private": false,
   "types": "build/index.d.ts",
   "scripts": {
     "start": "webpack serve",
