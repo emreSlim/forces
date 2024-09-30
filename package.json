@@ -1,14 +1,18 @@
 {
-  "name": "my-webpack-project",
+  "name": "colliding-balls",
   "version": "1.0.0",
   "private": true,
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "start": "webpack serve",
     "build": "webpack --mode=production --node-env=production",
     "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production --node-env=production",
     "watch": "webpack --watch",
-    "serve": "webpack serve"
+    "serve": "webpack serve",
+    "build-package": "node clean && tsc",
+    "deploy-package": "node deploy"
   },
   "devDependencies": {
     "@webpack-cli/generators": "^2.5.0",
@@ -26,5 +30,5 @@
     "webpack-dev-server": "^4.11.1",
     "workbox-webpack-plugin": "^6.5.4"
   },
-  "description": "My webpack project"
+  "description": "colliding balls with momentum and deflection"
 }
