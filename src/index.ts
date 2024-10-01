@@ -1,7 +1,7 @@
+// import { Simulation } from 'colliding-balls-simulation';
 import { CANVAS } from './global-constants';
 import { Simulation } from './components';
 
-/*
 import './index.css';
 
 export const canvas = document.createElement('canvas');
@@ -14,6 +14,5 @@ document.getElementById('app')?.appendChild(canvas);
 const simulation = new Simulation(canvas);
 
 simulation.init();
-*/
 
-export { Simulation } from './components';
+// export { Simulation } from './components';

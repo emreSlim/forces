@@ -1,6 +1,6 @@
 {
   "name": "colliding-balls-simulation",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "build/index.js",
   "private": false,
   "types": "build/index.d.ts",
@@ -30,5 +30,8 @@
     "webpack-dev-server": "^4.11.1",
     "workbox-webpack-plugin": "^6.5.4"
   },
-  "description": "colliding balls with momentum and deflection"
+  "description": "colliding balls with momentum and deflection",
+  "dependencies": {
+    "colliding-balls-simulation": "^1.0.1"
+  }
 }

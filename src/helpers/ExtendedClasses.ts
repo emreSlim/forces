@@ -18,7 +18,7 @@ export class Random {
   }
 
   static string(length: number = 15) {
-    let str = "";
+    let str = '';
     for (let i = length; i >= 0; i--) {
       str += String.fromCharCode(Random.int(90, 65));
     }
@@ -84,4 +84,6 @@ export class NumberE {
   }
 
   static radToDeg = (x: number) => (x * 180) / Math.PI;
+
+  static toHexString = (x: number) => (x < 16 ? '0' : '') + x.toString(16);
 }

@@ -1,6 +1,46 @@
 import { Circle, Line, Shape } from '../index';
 import { Geometry, NumberE, Random } from '../../helpers';
-class Simulation {
+
+export interface SimulationOptions {
+  /**
+   * The minimum radius of the balls
+   * @default 5
+   */
+  radiusMin?: number;
+  /**
+   * The maximum radius of the balls
+   * @default 20
+   */
+  radiusMax?: number;
+  /**
+   * The maximum speed of the balls
+   * @default 64
+   */
+  maxInitSpeed?: number;
+  /**
+   * The number of balls to generate
+   * @default (canvas.height * canvas.width) / 10000
+   * */
+  ballsCount?: number;
+  /**
+   * Whether to draw a tail for the balls
+   * @default true
+   */
+  tail?: boolean;
+  /**
+   * The size of the tail
+   * @min 0
+   * @max 10
+   * @default 5
+   */
+  tailSize?: number;
+  /**
+   * string in #rrggbb format
+   */
+  backgroundColor?: string;
+}
+
+export class Simulation {
   private canvas: HTMLCanvasElement;
 
   private shapes: Shape[] = [];
@@ -9,9 +49,51 @@ class Simulation {
   // private ball?: Circle;
   private animationTimerID?: number;
   private gravity = 64; //pixel/time**2
-  constructor(canvas: HTMLCanvasElement) {
+
+  private minRadius: number;
+  private maxRadius: number;
+  private maxInitSpeed: number;
+  private ballsCount: number;
+  private tail: boolean;
+  private tailSize: string;
+  private backgroundColor: string;
+
+  constructor(
+    canvas: HTMLCanvasElement,
+    {
+      radiusMax = 20,
+      radiusMin = 5,
+      maxInitSpeed = 64,
+      ballsCount,
+      tail = true,
+      tailSize = 5,
+      backgroundColor = '#111111',
+    }: SimulationOptions = {}
+  ) {
     this.canvas = canvas;
+    this.minRadius = radiusMin;
+    this.maxRadius = radiusMax;
+    this.maxInitSpeed = maxInitSpeed;
+    this.ballsCount =
+      ballsCount ?? (this.canvas.height * this.canvas.width) / 10000;
+    this.tail = tail;
+
+    if (tailSize < 0 || tailSize > 10) throw new Error('Invalid tail size');
+    tailSize = Math.floor((10 - tailSize) ** 3 * 0.255);
+
+    this.tailSize = NumberE.toHexString(tailSize);
+
+    console.log(this.tailSize);
+
+    if (!this.isRGB(backgroundColor)) throw new Error('Invalid color format');
+    this.backgroundColor = backgroundColor;
+
+    canvas.style.backgroundColor = this.backgroundColor;
   }
+
+  isRGB = (color: string) => {
+    return /^#[0-9A-F]{6}$/i.test(color);
+  };
 
   init = () => {
     this.addBalls();
@@ -19,17 +101,15 @@ class Simulation {
     window.addEventListener('mouseup', this.onMouseUp);
     window.addEventListener('click', this.onClick);
     window.addEventListener('dblclick', this.stopAnimation);
-    this.redraw();
+    this.redraw(this.tail);
     this.startAnimation();
   };
 
   addBalls = () => {
     const density = 1; //per 100 px^2
-    const ballcount = (this.canvas.height * this.canvas.width) / 10000;
-    const maxSpeed = 64;
 
-    for (let i = 0; i < ballcount; i++) {
-      const radius = Random.int(20, 5);
+    for (let i = 0; i < this.ballsCount; i++) {
+      const radius = Random.int(this.maxRadius, this.minRadius);
       const ball = new Circle(radius);
       this.balls.push(ball);
       this.shapes.push(ball);
@@ -41,8 +121,8 @@ class Simulation {
       );
       // //movement
       ball.setVelocity(
-        Random.int(maxSpeed, -maxSpeed),
-        Random.int(maxSpeed, -maxSpeed)
+        Random.int(this.maxInitSpeed, -this.maxInitSpeed),
+        Random.int(this.maxInitSpeed, -this.maxInitSpeed)
       );
       ball.startMoving();
     }
@@ -68,11 +148,11 @@ class Simulation {
     // this.balls[5].startMoving();
   };
 
-  redraw = (tail = true) => {
+  redraw = (tail: boolean) => {
     const ctx = this.canvas.getContext('2d');
     if (ctx) {
       ctx.save();
-      ctx.fillStyle = '#111' + (tail ? '1' : '');
+      ctx.fillStyle = this.backgroundColor + (tail ? this.tailSize : '');
       ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.restore();
       for (let shape of this.shapes) {
@@ -156,7 +236,7 @@ class Simulation {
     if (!this.animationTimerID) {
       const cb = () => {
         this.onTick();
-        this.redraw();
+        this.redraw(this.tail);
         this.animationTimerID = window.requestAnimationFrame(cb);
       };
       cb();
@@ -170,5 +250,3 @@ class Simulation {
     this.animationTimerID = undefined;
   };
 }
-
-export { Simulation };
