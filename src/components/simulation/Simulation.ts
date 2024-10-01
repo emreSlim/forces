@@ -30,12 +30,13 @@ export interface SimulationOptions {
   /**
    * The size of the tail
    * @min 0
-   * @max 10
+   * @max 8
    * @default 5
    */
   tailSize?: number;
   /**
    * string in #rrggbb format
+   * @default '#111111'
    */
   backgroundColor?: string;
 }

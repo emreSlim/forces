@@ -23,9 +23,9 @@ const options = {
   radiusMax: 10,
 };
 
-document.getElementById('app')?.appendChild(canvas, options); //append the canvas to the body
+document.getElementById('app')?.appendChild(canvas); //append the canvas to the body
 
-const simulation = new Simulation(canvas); //create a new instance of the Simulation class
+const simulation = new Simulation(canvas, options); //create a new instance of the Simulation class
 
 simulation.init(); //initialize the simulation
 ```
